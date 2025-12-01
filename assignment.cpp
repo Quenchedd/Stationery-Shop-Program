@@ -10,6 +10,12 @@ struct Item
     int quantity;
 };
 
+struct Cart
+{
+    float totalPrice;
+};
+
+
 class Store
 {
 private:
