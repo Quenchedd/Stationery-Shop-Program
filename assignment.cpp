@@ -87,24 +87,43 @@ public:
                     cin>>qty;   
                 }
 
-                if (head == NULL)
+                bool updated = false;
+                CartItem *ptr = head;
+                while (ptr != NULL)
                 {
-                    head = new CartItem;
-                    head->name = inv.catalog[i].name;
-                    head->quantity = qty;
-                    head->totalPrice = inv.catalog[i].price * qty;
-                    head->next = NULL;
-                    tail = head;
+                    if (ptr->name == inv.catalog[i].name)
+                    {
+                        ptr->quantity += qty;
+                        ptr->totalPrice = ptr->quantity * inv.catalog[i].price;
+                        updated = true;
+                        break;
+                    }
+                    ptr = ptr->next;
                 }
-                else{
-                    CartItem *temp = new CartItem;
-                    temp->name = inv.catalog[i].name;
-                    temp->quantity = qty;
-                    temp->totalPrice = inv.catalog[i].price * qty;
-                    temp -> next = NULL;
+                
 
-                    tail->next = temp;
-                    tail = temp;
+                if (!updated)
+                {
+
+                    if (head == NULL)
+                    {
+                        head = new CartItem;
+                        head->name = inv.catalog[i].name;
+                        head->quantity = qty;
+                        head->totalPrice = inv.catalog[i].price * qty;
+                        head->next = NULL;
+                        tail = head;
+                    }
+                    else{
+                        CartItem *temp = new CartItem;
+                        temp->name = inv.catalog[i].name;
+                        temp->quantity = qty;
+                        temp->totalPrice = inv.catalog[i].price * qty;
+                        temp -> next = NULL;
+
+                        tail->next = temp;
+                        tail = temp;
+                    }   
                 }
                 
                 found = 1;
@@ -164,7 +183,6 @@ public:
             return;
         }
         
-
         int edit;
         showCatalog();
         cout<<"\nEnter ID of the item you wish to edit to : ";
@@ -212,7 +230,7 @@ public:
         viewItems();
 
         int option;
-        cout<<"\nEnter number of item to remove. ";
+        cout<<"\nEnter number of item to remove : ";
         cin>>option;
 
         CartItem *temp = head;
