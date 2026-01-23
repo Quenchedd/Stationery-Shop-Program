@@ -1,37 +1,136 @@
 #include <iostream>
-#include <iomanip>
+#include <iomanip> // for output alignment
 #include <string>
+#include <cctype> // for case insensitive searching
 using namespace std;
 
+// Declaring item details to be placed in catalog array
 struct Item
 {
     int id;
     string name;
     float price;
+    Item *next;
 };
 
-class Inventory
-{
-public:
-    Item catalog[20];
-    int top;
+// Declaring data node for hash table
+struct HashNode {
+    Item data;
+    HashNode *next;
+    
+    HashNode(int id, string name, float price) {
+        data.id = id;
+        data.name = name;
+        data.price = price;
+        next = NULL;
+    }
+};
 
-    Inventory(){
-        top = -1;
+class Inventory {
+private:
+    static const int TABLE_SIZE = 30;
+    HashNode* catalog[TABLE_SIZE]; // Declaring hash table
+
+    // Linking ID as key for hash function
+    int hashFunction(int id) { 
+        return id % TABLE_SIZE; // common hash function using modulo
     }
 
-    void pushItem(int id, string name, float price){
-        if (top < 19)
-        {
-            top++;
-            catalog[top].id = id;
-            catalog[top].name = name;
-            catalog[top].price = price;
+public:
+
+    // Initializes the hash table by emptying all array elements
+    Inventory() {
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            catalog[i] = NULL;
         }
     }
+
+    // Pushes all items into the catalog stack array using hashing with chaining
+    void pushItem(int id, string name, float price) {
+
+        int index = hashFunction(id); // hash function called to convert key to index
+        HashNode* newNode = new HashNode(id, name, price); // store the item data in a new Hash Node for chaining
+        newNode->next = catalog[index]; 
+        catalog[index] = newNode;
+
+    }
+
+    // Search if the item ID exists in the catalog when adding an item to the cart
+    Item* searchId(int id) {
+        int index = hashFunction(id);
+        HashNode* temp = catalog[index];
+
+        // Loops to check every element slot to find the ID that matches
+        while (temp != NULL) {
+            if (temp->data.id == id) {
+                return &(temp->data); // matching ID found, returning item data(name, price)
+            }
+            temp = temp->next;
+        }
+        return NULL; // Not found
+    }
+
+    // Displays all items available for purchase
+    void showCatalog() {
+        cout << "\n======= STATIONERY CATALOG ========" << endl;
+        bool isEmpty = true;
+
+        // Loop through every index in the hash table
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            HashNode* temp = catalog[i];
+
+        // Go through each node of every index
+        while (temp != NULL) {
+            isEmpty = false;
+            cout << "ID: " << temp->data.id 
+                 << " | " << setw(25) << left << temp->data.name 
+                 << " | Price: RM" << fixed << setprecision(2) << temp->data.price << endl;
+            temp = temp->next;
+            }
+        }
+
+        if (isEmpty) cout << "The catalog is currently empty." << endl;
+    }
+
+    void searchName(string query) {
+        bool found = false;
     
+        // Convert user query to lowercase once
+        string lowerQuery = query;
+        for (int i = 0; i < lowerQuery.length(); i++) {
+            lowerQuery[i] = tolower(lowerQuery[i]);
+        }
+
+        cout << "\n----SEARCH RESULTS----" << endl;
+
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            HashNode* temp = catalog[i];
+
+            while (temp != NULL) {
+
+                // Convert item name to lowercase temporarily for comparison
+                string lowerItemName = temp->data.name;
+                for (int j = 0; j < lowerItemName.length(); j++) {
+                    lowerItemName[j] = tolower(lowerItemName[j]);
+                }
+
+                // Perform the search on the lowercase versions
+                if (lowerItemName.find(lowerQuery) != string::npos) {
+
+                    // display all items that match the keyword
+                    cout << "ID: " << temp->data.id << " | " << setw(25) << left << temp->data.name 
+                         << " | Price: RM" << fixed << setprecision(2) << temp->data.price << endl;
+                    found = true;
+
+                }
+                temp = temp->next;
+            }
+        }
+        if (!found) cout << "No items found matching \"" << query << "\"." << endl;
+    }
 };
 
+// Declaring item details to be placed in cart
 struct CartItem
 {
     string name;
@@ -43,113 +142,128 @@ struct CartItem
 class Store
 {
 private:
-    Inventory inv;      
-    CartItem* head;
+    Inventory inv; // declare object for Inventory 
+
+    CartItem* head; // declare both front and back of linked queue
     CartItem* tail;
 
-    void showCatalog(){
-        for (int i = 0; i <= inv.top; i++) {
-            cout<<i + 1<< ". "<<inv.catalog[i].name<<" | ID : "<<inv.catalog[i].id<<" | Price : RM"<<fixed<<setprecision(2)<< inv.catalog[i].price<<endl;
-        }
-    }
-
 public:
+
+    // Initialize all stationery items into catalog
     Store() {
-        inv.pushItem(101, "2B Pencil", 0.60);
-        inv.pushItem(102, "Sharpener", 1.50);
-        inv.pushItem(103, "Ballpoint Black Pen", 0.80);
-        inv.pushItem(104, "Black Marker Pen", 2.00);
-        inv.pushItem(105, "Ballpoint Blue Pen", 0.80);
-        inv.pushItem(106, "Ruler(15cm)", 1.00);
+
+        // PENS
+        inv.pushItem(101, "Gel Pen Black", 3.50);
+        inv.pushItem(102, "Gel Pen Blue", 3.50);
+        inv.pushItem(103, "Gel Pen Red", 3.50);
+        inv.pushItem(104, "Ballpoint Pen", 1.20);
+        inv.pushItem(105, "Signature Pen", 15.00);
+
+        // PAPER
+        inv.pushItem(111, "A4 Paper 70gsm", 12.50);
+        inv.pushItem(112, "A4 Paper 80gsm", 14.00);
+        inv.pushItem(113, "Spiral Notebook", 4.50);
+        inv.pushItem(114, "Sticky Notes", 2.00);
+        inv.pushItem(115, "Sketchbook A3", 8.50);
+
+        // PENCILS/ERASERS
+        inv.pushItem(121, "2B Pencil Pack", 5.00);
+        inv.pushItem(122, "Mechanical Pencil", 3.00);
+        inv.pushItem(123, "Pencil Lead 0.5", 1.50);
+        inv.pushItem(124, "Exam Eraser", 1.00);
+        inv.pushItem(125, "Electric Eraser", 12.00);
+
+        // OTHER ACCESSORIES
+        inv.pushItem(131, "Steel Ruler 30cm", 2.50);
+        inv.pushItem(132, "Scissors", 4.00);
+        inv.pushItem(133, "Glue Stick", 2.20);
+        inv.pushItem(134, "Correction Tape", 3.50);
+        inv.pushItem(135, "Expanding Folder", 6.80);
         
+        // Initialize Linked Queue by emptying front and back pointers
         head = tail = NULL;
     }
 
+    // Function to add an item to cart
     void addItem(){
         int add, qty;
-        showCatalog();
+        inv.showCatalog();// Display available items
         cout<<"\nEnter ID of item to add : ";
         cin>>add;
 
-        int found = 0;
-        for (int i = 0; i <= inv.top; i++)
-        {
-            if (inv.catalog[i].id == add)
-            {
-                
-                cout<<"Enter amount : ";
-                cin>>qty;
+        // Search if user has entered a valid ID
+        Item* foundItem = inv.searchId(add);
 
-                while (qty < 1)
-                {
-                    cout<<"\nPlease enter a valid amount (more than 0).\n";
-                    cout<<"Enter amount : ";
-                    cin>>qty;   
+        // Check if item found
+        if (foundItem != NULL) {
+            cout << "Enter quantity : ";
+            cin >> qty;
+
+            // reinput if user enter invalid amount
+            while (qty < 1) {
+                cout << "Enter valid quantity (> 0): ";
+                cin >> qty;
+            }
+
+            bool updated = false;
+            CartItem *checkDup = head;
+
+            // Check if user has already added this item 
+            while (checkDup != NULL) {
+
+                // If item to add matches the item in cart
+                if (checkDup->name == foundItem->name) {
+
+                    // Instead of inserting in a new Node, increase quantity of the Node that contains this item
+                    checkDup->quantity += qty; 
+                    checkDup->totalPrice = checkDup->quantity * foundItem->price;
+                    updated = true;
+                    break;
+
                 }
+                checkDup = checkDup->next; // check the next Node 
+            }
 
-                bool updated = false;
-                CartItem *ptr = head;
-                while (ptr != NULL)
-                {
-                    if (ptr->name == inv.catalog[i].name)
-                    {
-                        ptr->quantity += qty;
-                        ptr->totalPrice = ptr->quantity * inv.catalog[i].price;
-                        updated = true;
-                        break;
-                    }
-                    ptr = ptr->next;
+            // If item isn't in cart
+            if (!updated) {
+                CartItem *temp = new CartItem; // make a new Node to input item details
+                temp->name = foundItem->name;
+                temp->quantity = qty;
+                temp->totalPrice = foundItem->price * qty;
+                temp->next = NULL; // Terminate the queue by setting the last node's pointer to NULL
+
+                // If the cart is empty
+                if (head == NULL) 
+                head = tail = temp; // Set head and tail pointing to the first item
+
+                else { 
+                    tail->next = temp; // else link the queue by pointing the tail(recent item) to the new item added 
+                    tail = temp; // Set tail as the new item
                 }
-                
-
-                if (!updated)
-                {
-
-                    if (head == NULL)
-                    {
-                        head = new CartItem;
-                        head->name = inv.catalog[i].name;
-                        head->quantity = qty;
-                        head->totalPrice = inv.catalog[i].price * qty;
-                        head->next = NULL;
-                        tail = head;
-                    }
-                    else{
-                        CartItem *temp = new CartItem;
-                        temp->name = inv.catalog[i].name;
-                        temp->quantity = qty;
-                        temp->totalPrice = inv.catalog[i].price * qty;
-                        temp -> next = NULL;
-
-                        tail->next = temp;
-                        tail = temp;
-                    }   
-                }
-                
-                found = 1;
-                cout<<"\nSuccess : Item added to cart.\n";
-                return;
-            }    
+            }
+            cout << "\nSuccess: Item added to cart.\n";
+        } else {
+            cout << "Invalid ID. Please try again.\n";
         }
-        if (found == 0)
-        {
-            cout<<"Invalid item ID. Please try again.\n";
-        }
-        
     }
 
+    // View items in cart
     void viewItems(){
+
+        // Check if cart is empty
         if(head == NULL){
             cout<<"\nYour cart is currently empty.\n";
             return;
         }
 
+        // Intialize temp as the first item 
         CartItem *temp = head;
         cout<<"\n=====Your Cart=====\n";
 
         int i = 1;
         while (temp != NULL)
         {
+            // Display all items in cart
             cout<<i<<". "<<temp->name<<" | Quantity : "<<temp->quantity<<" | Total : RM"<<fixed<<setprecision(2)<<temp->totalPrice;
             cout<<endl;
             i++;
@@ -165,6 +279,7 @@ public:
             return;
         }
         
+        // Show all items in cart
         viewItems();
 
         int selection;
@@ -172,54 +287,51 @@ public:
         cin>>selection;
 
         CartItem *temp = head;
+        // Find the Node that user selected
         for (int i = 1; i < selection && temp != NULL; i++)
         {
             temp = temp->next;
         }
 
+        // Display error message if user enter a number higher than items in cart or < 1
         if (temp == NULL || selection < 1)
         {
             cout<<"Invalid selection. Please try again.";
             return;
         }
         
-        int edit;
-        showCatalog();
-        cout<<"\nEnter ID of the item you wish to edit to : ";
+        int edit, qty;
+        inv.showCatalog();
+        cout<<"\nEnter ID of the item to edit to : ";
         cin>>edit;
 
-        int found = 0;
-        for (int i = 0; i <= inv.top; i++)
-        {
-            if (inv.catalog[i].id == edit)
-            {
-                int qty;
-                cout<<"Enter amount : ";
-                cin>>qty;
+        // Search item Id in catalog
+        Item* foundItem = inv.searchId(edit);
 
-                while (qty < 1)
-                {
-                    cout<<"\nPlease enter a valid amount (more than 0).\n";
-                    cout<<"Enter amount : ";
-                    cin>>qty;   
-                }
+        // Similar to addItem
+        if (foundItem != NULL) {
+            cout << "Enter quantity : ";
+            cin >> qty;
+            
+            while (qty < 1) {
+                cout << "Enter valid quantity (> 0): ";
+                cin >> qty;
+            }
 
-                temp->name = inv.catalog[i].name;
+                temp->name = foundItem->name;
                 temp->quantity = qty;
-                temp->totalPrice = inv.catalog[i].price * qty;
+                temp->totalPrice = foundItem->price * qty;
+                temp->next = NULL;
                 
-                found = 1;
                 cout<<"\nSuccess : Cart Updated.\n";
-                return;
-            }    
         }
-        if (found == 0)
-        {
+        else{
             cout<<"Invalid item ID. Please try again.\n";
         }
 
     }
 
+    // Remove item from cart
     void removeItem(){
 
         if(head == NULL){
@@ -235,48 +347,93 @@ public:
 
         CartItem *temp = head;
         CartItem *prev = NULL;
+
+        // Loop to the next Node until temp is pointing to the item to remove
         for (int i = 1; i < option && temp != NULL; i++)
         {
             prev = temp;
             temp = temp->next;
         }
 
+        // Display error message if user enter a number higher than items in cart or < 1
         if (temp == NULL || option < 1)
         {
             cout<<"Invalid selection. Please try again.";
             return;
         }
 
+        // If user wish to remove first item
         if (temp == head)
         {
-            head = head->next;
-            if (head == NULL)
+            head = head->next; // make second item as new head
+
+            if (head == NULL) // if no second item, initialize tail as NULL
                 tail = NULL;
         }
         else{
-            prev->next = temp->next;
+            prev->next = temp->next; // link previous Node with the next Node of removed item
 
+            // If item to remove is the most recent item
             if (temp == tail)
             {
-                tail = prev;
+                tail = prev; // set previous Node as new tail
                 tail->next = NULL;
             }      
         }
-        delete temp;
+        delete temp; // remove item from cart
         cout<<"\nSuccess : Item removed from cart.\n";
         
     }
 
+    // Search item in catalog
     void searchItem(){
-    
+
+        string query;
+        cout << "\nEnter keyword to search: ";
+        cin>>query;
+        inv.searchName(query); // calls searchName function to linear search through the catalog 
+
     }
+
+    void receipt() {
+
+        if (head == NULL) {
+            cout << "\nYour cart is empty. No receipt to generate.\n";
+            return;
+        }
+
+    float total = 0.00;
+    cout << "\n================ RECEIPT ===============" << endl;
+    cout << left << setw(30) << "Item" << "Price (RM)" << endl;
+    cout << "----------------------------------------" << endl;
+
+    // Displays all items in cart
+    CartItem *temp = head;
+    while (temp != NULL) {
+
+        cout << left << setw(35) << temp->name 
+             << fixed << setprecision(2) << temp->totalPrice << endl;
+        
+        // Tally up the total price of each item
+        total += temp->totalPrice;
+        temp = temp->next;
+
+    }
+
+    cout << "----------------------------------------" << endl;
+    cout << left << setw(33) << "TOTAL:" 
+         << "RM" << fixed << setprecision(2) << total << endl;
+    cout << "========================================" << endl;
+    cout << "          THANKS FOR SHOPPING!          " << endl;
+    cout << "========================================" << endl;
+}
 
 };
 
 
 int main()
 {
-    Store shop;
+    Store shop; // declare object for Store
     int choice;
 
     do
@@ -287,11 +444,12 @@ int main()
         cout<<"3. Edit Cart"<<endl;
         cout<<"4. Remove Item from Cart"<<endl;
         cout<<"5. Search Item"<<endl;
-        cout<<"6. Exit"<<endl<<endl;
+        cout<<"6. Checkout"<<endl<<endl;
 
         cout<<"Enter choice : ";
         cin>>choice;
 
+        // Direct choice numbers to their respective functions
         switch (choice)
         {
             case 1:
@@ -310,7 +468,8 @@ int main()
                 shop.searchItem();
                 break;
             case 6:
-                cout<<"Program exited.";
+                shop.receipt();
+                cout<<"\nProgram exited.";
                 break;
             default:
                 cout<<"Invalid choice. Please input a valid choice (1-6)"<<endl;
