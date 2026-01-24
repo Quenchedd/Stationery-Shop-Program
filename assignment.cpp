@@ -55,7 +55,7 @@ public:
 
     }
 
-    // Search if the item ID exists in the catalog when adding an item to the cart
+    // Search if the item ID exists in the catalog and return item details
     Item* searchId(int id) {
         int index = hashFunction(id);
         HashNode* temp = catalog[index];
