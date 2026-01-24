@@ -101,7 +101,7 @@ public:
             lowerQuery[i] = tolower(lowerQuery[i]);
         }
 
-        cout << "\n----SEARCH RESULTS----" << endl;
+        cout << "\n----Search Results----" << endl;
 
         for (int i = 0; i < TABLE_SIZE; i++) {
             HashNode* temp = catalog[i];
@@ -321,7 +321,6 @@ public:
                 temp->name = foundItem->name;
                 temp->quantity = qty;
                 temp->totalPrice = foundItem->price * qty;
-                temp->next = NULL;
                 
                 cout<<"\nSuccess : Cart Updated.\n";
         }
@@ -390,7 +389,7 @@ public:
 
         string query;
         cout << "\nEnter keyword to search: ";
-        cin>>query;
+        getline(cin>>ws, query); // to allow spaces in search
         inv.searchName(query); // calls searchName function to linear search through the catalog 
 
     }
