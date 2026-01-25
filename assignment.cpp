@@ -296,7 +296,7 @@ public:
         // Display error message if user enter a number higher than items in cart or < 1
         if (temp == NULL || selection < 1)
         {
-            cout<<"Invalid selection. Please try again.";
+            cout<<"Invalid selection. Please try again.\n";
             return;
         }
         
@@ -357,7 +357,7 @@ public:
         // Display error message if user enter a number higher than items in cart or < 1
         if (temp == NULL || option < 1)
         {
-            cout<<"Invalid selection. Please try again.";
+            cout<<"Invalid selection. Please try again.\n";
             return;
         }
 
@@ -366,7 +366,7 @@ public:
         {
             head = head->next; // make second item as new head
 
-            if (head == NULL) // if no second item, initialize tail as NULL
+            if (head == NULL) // if no second item, set tail as NULL
                 tail = NULL;
         }
         else{
