@@ -434,10 +434,10 @@ public:
     void searchItem(){
 
         string query;
-        showHistory();
+        showHistory(); // Display search history
         cout << "\nEnter keyword to search: ";
         getline(cin>>ws, query); // to allow spaces in search
-        pushHistory(query);
+        pushHistory(query); // store serach history in stack
         inv.searchName(query); // calls searchName function to linear search through the catalog 
 
     }
