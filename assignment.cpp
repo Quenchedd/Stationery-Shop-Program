@@ -437,7 +437,7 @@ public:
         showHistory(); // Display search history
         cout << "\nEnter keyword to search: ";
         getline(cin>>ws, query); // to allow spaces in search
-        pushHistory(query); // store serach history in stack
+        pushHistory(query); // Store search history in stack
         inv.searchName(query); // calls searchName function to linear search through the catalog 
 
     }
