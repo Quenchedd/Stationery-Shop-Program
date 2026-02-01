@@ -147,6 +147,11 @@ private:
     CartItem* head; // declare both front and back of linked queue
     CartItem* tail;
 
+    // declare top pointer and search history stack array
+    int top;
+    static const int MAX_HISTORY = 5;
+    string searchHistory[MAX_HISTORY];
+
 public:
 
     // Initialize all stationery items into catalog
@@ -182,6 +187,47 @@ public:
         
         // Initialize Linked Queue by emptying front and back pointers
         head = tail = NULL;
+
+        // Intialize Stack Array top pointer
+        top = -1;
+    }
+
+    // Push the user's search history into the stack
+    void pushHistory(string query){
+
+        // Checks if the stack is full (user previously searched more than 5 times)
+        if (top < MAX_HISTORY - 1)
+        {
+            top++;
+            searchHistory[top] = query;
+        }
+        else
+        {
+            // If stack is full, shift items to keep most recent search history
+            for (int i = 0; i < MAX_HISTORY - 1; i++)
+            {
+                searchHistory[i] = searchHistory[i+1];
+            }
+            searchHistory[top] = query;   
+        }
+    }
+
+    // Peek the user's recent search history from the stack
+    void showHistory(){
+
+        // Checks if stack is empty
+        if (top == -1)
+        {
+            cout<<"\nNo recent search history.\n";
+        }
+        else
+        {
+            // If not empty, display all of user's recent searches
+            cout<<"\n-----Recent Searches-----\n";
+            for (int i = top; i >= 0; i--) {
+            cout << (top - i + 1) << ". " << searchHistory[i] << endl;
+            }
+        }
     }
 
     // Function to add an item to cart
@@ -388,8 +434,10 @@ public:
     void searchItem(){
 
         string query;
+        showHistory();
         cout << "\nEnter keyword to search: ";
         getline(cin>>ws, query); // to allow spaces in search
+        pushHistory(query);
         inv.searchName(query); // calls searchName function to linear search through the catalog 
 
     }
